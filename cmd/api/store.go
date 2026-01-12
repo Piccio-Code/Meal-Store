@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	. "github.com/Piccio-Code/MealStore/internal/data"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"time"
 )
@@ -15,6 +16,15 @@ func (app *application) createStore(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.errorLog.Println(err)
 		app.BadRequestError(w, r)
+		return
+	}
+
+	v := validator.New(validator.WithRequiredStructEnabled())
+
+	err = v.Struct(newStore)
+
+	if err != nil {
+		app.ValidationError(w, r, err)
 		return
 	}
 

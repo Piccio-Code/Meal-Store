@@ -12,5 +12,5 @@ type Store struct {
 }
 
 type StoreInput struct {
-	Name string `json:"name,omitempty"`
+	Name string `json:"name" validate:"required,gte=3,lte=15"`
 }

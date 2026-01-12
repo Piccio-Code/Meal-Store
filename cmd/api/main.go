@@ -1,58 +1,51 @@
 package main
 
 import (
-	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
-	"os/signal"
-	"syscall"
+	"os"
 	"time"
-
-	"MealStore/internal/server"
 )
 
-func gracefulShutdown(apiServer *http.Server, done chan bool) {
-	// Create context that listens for the interrupt signal from the OS.
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
+const version = "1.0.0"
 
-	// Listen for the interrupt signal.
-	<-ctx.Done()
+type config struct {
+	port int
+	env  string
+}
 
-	log.Println("shutting down gracefully, press Ctrl+C again to force")
-	stop() // Allow Ctrl+C to force shutdown
-
-	// The context is used to inform the server it has 5 seconds to finish
-	// the request it is currently handling
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := apiServer.Shutdown(ctx); err != nil {
-		log.Printf("Server forced to shutdown with error: %v", err)
-	}
-
-	log.Println("Server exiting")
-
-	// Notify the main goroutine that the shutdown is complete
-	done <- true
+type application struct {
+	infoLog  *log.Logger
+	errorLog *log.Logger
+	config   config
 }
 
 func main() {
+	var cfg config
 
-	server := server.NewServer()
+	flag.IntVar(&cfg.port, "port", 8080, "The port of the backend.")
+	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
+	flag.Parse()
 
-	// Create a done channel to signal when the shutdown is complete
-	done := make(chan bool, 1)
+	infoLog := log.New(os.Stdout, "INFO:\t", log.LstdFlags)
+	errorLog := log.New(os.Stderr, "ERROR:\t", log.LstdFlags|log.Lshortfile)
 
-	// Run graceful shutdown in a separate goroutine
-	go gracefulShutdown(server, done)
-
-	err := server.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
-		panic(fmt.Sprintf("http server error: %s", err))
+	app := &application{
+		infoLog:  infoLog,
+		errorLog: errorLog,
+		config:   cfg,
 	}
 
-	// Wait for the graceful shutdown to complete
-	<-done
-	log.Println("Graceful shutdown complete.")
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", cfg.port),
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+	}
+
+	app.infoLog.Printf("starting %s server on http://localhost:%d", cfg.env, cfg.port)
+	app.errorLog.Fatal(srv.ListenAndServe())
 }
