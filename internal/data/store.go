@@ -9,7 +9,7 @@ import (
 type Store struct {
 	ID        int       `json:"id,omitempty"`
 	Name      string    `json:"name,omitempty"`
-	UserID    int       `json:"-"`
+	UserID    string    `json:"-"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
@@ -17,11 +17,11 @@ type StoreInput struct {
 	Name string `json:"name" validate:"required,gte=3,lte=15"`
 }
 
-type ModelStore struct {
+type StoreModel struct {
 	DB *pgxpool.Pool
 }
 
-func (m ModelStore) Insert(ctx context.Context, newStore StoreInput, userId string) (storeId int, err error) {
+func (m StoreModel) Insert(ctx context.Context, newStore StoreInput, userId string) (storeId int, err error) {
 	stmt := `INSERT INTO stores(name, user_id) 
 			 VALUES ($1, $2)
 			 RETURNING id`
@@ -37,7 +37,7 @@ func (m ModelStore) Insert(ctx context.Context, newStore StoreInput, userId stri
 	return storeId, nil
 }
 
-func (m ModelStore) Get(ctx context.Context, storeId int, userId string) (store Store, err error) {
+func (m StoreModel) Get(ctx context.Context, storeId int, userId string) (store Store, err error) {
 
 	stmt := `SELECT id, name, user_id, created_at
 			 FROM stores
@@ -54,26 +54,63 @@ func (m ModelStore) Get(ctx context.Context, storeId int, userId string) (store 
 	return store, nil
 }
 
-func (m ModelStore) Update(ctx context.Context, newStore StoreInput, storeId int, userId string) error {
+func (m StoreModel) List(ctx context.Context, userId string) (stores []Store, err error) {
+
+	tx, err := m.DB.Begin(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	stmt := `SELECT id, name, user_id, created_at
+			 FROM stores
+			 WHERE user_id = $1`
+
+	rows, err := tx.Query(ctx, stmt, userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var store Store
+
+		err := rows.Scan(&store.ID, &store.Name, &store.UserID, &store.CreatedAt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		stores = append(stores, store)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return stores, nil
+}
+
+func (m StoreModel) Update(ctx context.Context, newStore StoreInput, storeId int, userId string) error {
 	stmt := `UPDATE stores
-			 SET name= $1
-			 WHERE id = $2 AND user_id = $3
+			 SET name = $1, created_at = $2
+			 WHERE id = $3 AND user_id = $4
 			`
 
-	args := []interface{}{newStore.Name, storeId, userId}
+	args := []interface{}{newStore.Name, time.Now(), storeId, userId}
 
-	_, err := m.DB.Exec(ctx, stmt, args)
+	_, err := m.DB.Exec(ctx, stmt, args...)
 
 	return err
 }
 
-func (m ModelStore) Delete(ctx context.Context, storeId int, userId string) error {
+func (m StoreModel) Delete(ctx context.Context, storeId int, userId string) error {
 	stmt := `DELETE FROM stores
 			 WHERE id = $1 AND user_id = $2`
 
 	args := []interface{}{storeId, userId}
 
-	_, err := m.DB.Exec(ctx, stmt, args)
+	_, err := m.DB.Exec(ctx, stmt, args...)
 
 	return err
 }

@@ -10,10 +10,10 @@ type CurrentUserID string
 
 const CurrentUserIDKey = CurrentUserID("CurrentUserIDKey")
 
-func (app *application) RequireAuth(next http.Handler) http.Handler {
+func (app *application) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			token, err := jwt.ParseRequest(r)
+			token, err := jwt.ParseRequest(r, jwt.WithVerify(false)) // TODO: per la production toggle on
 
 			if err != nil {
 				app.errorLog.Println(err)

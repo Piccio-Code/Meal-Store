@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/Piccio-Code/MealStore/internal/data"
 	"log"
 	"net/http"
 	"os"
@@ -34,6 +35,7 @@ type application struct {
 	infoLog  *log.Logger
 	errorLog *log.Logger
 	pool     *pgxpool.Pool
+	models   data.Models
 	config   config
 }
 
@@ -79,6 +81,7 @@ func main() {
 		infoLog:  infoLog,
 		errorLog: errorLog,
 		pool:     pool,
+		models:   data.NewModels(pool),
 		config:   cfg,
 	}
 

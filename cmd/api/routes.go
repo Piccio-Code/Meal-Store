@@ -20,12 +20,22 @@ func (app *application) routes() *chi.Mux {
 
 	v1Router := chi.NewRouter()
 
-	v1Router.HandleFunc("GET /healthcheck", app.healthcheckHandler)
+	v1Router.Group(func(public chi.Router) {
+		public.HandleFunc("GET /healthcheck", app.healthcheckHandler)
+	})
 
-	v1Router.HandleFunc("POST /store", app.createStore)
+	v1Router.Group(func(protected chi.Router) {
+		protected.Use(app.AuthMiddleware)
 
-	v1Router.HandleFunc("GET /store", app.getStores)
-	v1Router.HandleFunc("GET /store/{id}", app.getStore)
+		protected.HandleFunc("POST /store", app.createStoreHandler)
+
+		protected.HandleFunc("GET /store", app.listStoreHandler)
+		protected.HandleFunc("GET /store/{id}", app.getStoreHandler)
+
+		protected.HandleFunc("PUT /store/{id}", app.updateStoreHandler)
+
+		protected.HandleFunc("DELETE /store/{id}", app.deleteStoreHandler)
+	})
 
 	router.Mount("/v1", v1Router)
 
