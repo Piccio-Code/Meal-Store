@@ -31,6 +31,10 @@ func (app *application) BadRequestError(w http.ResponseWriter, r *http.Request) 
 	app.WriteError(w, r, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 }
 
+func (app *application) UnauthorizedError(w http.ResponseWriter, r *http.Request) {
+	app.WriteError(w, r, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+}
+
 func (app *application) ValidationError(w http.ResponseWriter, r *http.Request, err error) {
 
 	var validateErrs validator.ValidationErrors
