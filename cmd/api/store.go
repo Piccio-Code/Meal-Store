@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
 	. "github.com/Piccio-Code/MealStore/internal/data"
 	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
 func (app *application) createStoreHandler(w http.ResponseWriter, r *http.Request) {
-	var newStore StoreInput
+	var newStore Store
 
 	err := app.readeJSON(r, &newStore)
 
@@ -33,7 +32,7 @@ func (app *application) createStoreHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	newStoreId, err := app.models.Stores.Insert(r.Context(), newStore, userId)
+	err = app.models.Stores.Insert(r.Context(), &newStore, userId)
 
 	if err != nil {
 		app.errorLog.Println(err)
@@ -41,8 +40,15 @@ func (app *application) createStoreHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	fmt.Fprintf(w, "The store with the id: %d was succeffuly created", newStoreId)
-	w.WriteHeader(http.StatusCreated)
+	app.infoLog.Println(newStore)
+
+	err = app.writeJSON(w, http.StatusCreated, envelop{"new_store": newStore})
+
+	if err != nil {
+		app.errorLog.Println(err)
+		app.BadRequestError(w, r)
+		return
+	}
 }
 
 func (app *application) listStoreHandler(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +110,7 @@ func (app *application) getStoreHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (app *application) updateStoreHandler(w http.ResponseWriter, r *http.Request) {
-	var newStore StoreInput
+	var newStore Store
 
 	err := app.readeJSON(r, &newStore)
 
@@ -122,14 +128,6 @@ func (app *application) updateStoreHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	storeId, err := app.getIdParam(r)
-
-	if err != nil {
-		app.errorLog.Println(err)
-		app.NotFoundError(w, r)
-		return
-	}
-
 	userId, ok := r.Context().Value(CurrentUserIDKey).(string)
 
 	if !ok {
@@ -137,7 +135,7 @@ func (app *application) updateStoreHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = app.models.Stores.Update(r.Context(), newStore, storeId, userId)
+	err = app.models.Stores.Update(r.Context(), &newStore, userId)
 
 	if err != nil {
 		app.errorLog.Println(err)
@@ -145,8 +143,13 @@ func (app *application) updateStoreHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	fmt.Fprintf(w, "The store with the id: %d was succeffuly updated", storeId)
-	w.WriteHeader(http.StatusNoContent)
+	err = app.writeJSON(w, http.StatusOK, envelop{"updated_store": newStore})
+
+	if err != nil {
+		app.errorLog.Println(err)
+		app.BadRequestError(w, r)
+		return
+	}
 }
 
 func (app *application) deleteStoreHandler(w http.ResponseWriter, r *http.Request) {
@@ -173,6 +176,11 @@ func (app *application) deleteStoreHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	fmt.Fprintf(w, "The store with the id: %d was succeffuly deleted", storeId)
-	w.WriteHeader(http.StatusNoContent)
+	err = app.writeJSON(w, http.StatusOK, envelop{"deleted_store_id": storeId})
+
+	if err != nil {
+		app.errorLog.Println(err)
+		app.BadRequestError(w, r)
+		return
+	}
 }

@@ -3,49 +3,70 @@ package data
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log"
 	"time"
 )
 
 type Store struct {
-	ID        int       `json:"id,omitempty"`
-	Name      string    `json:"name,omitempty"`
-	UserID    string    `json:"-"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
-}
-
-type StoreInput struct {
-	Name string `json:"name" validate:"required,gte=3,lte=15"`
+	ID         *int       `json:"id,omitempty"`
+	Name       *string    `json:"name,omitempty" validate:"required,gte=3,lte=15"`
+	UserID     *string    `json:"-"`
+	Version    *string    `json:"version,omitempty"`
+	CreatedAt  *time.Time `json:"created_at,omitempty"`
+	ModifiedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 type StoreModel struct {
 	DB *pgxpool.Pool
 }
 
-func (m StoreModel) Insert(ctx context.Context, newStore StoreInput, userId string) (storeId int, err error) {
+func (m StoreModel) Test(ctx context.Context, uid string) string {
+
+	var user string
+
+	tx, _ := m.DB.Begin(ctx)
+
+	_, err := tx.Exec(ctx, `SELECT set_config('app.uid', $1, true)`, uid)
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+
+	// Leggi la variabile
+	err = tx.QueryRow(ctx, `SELECT current_setting('app.uid', true)`).Scan(&user)
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+
+	tx.Commit(ctx)
+	return user
+}
+
+func (m StoreModel) Insert(ctx context.Context, newStore *Store, userId string) error {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
 	stmt := `INSERT INTO stores(name, user_id) 
 			 VALUES ($1, $2)
-			 RETURNING id`
+			 RETURNING id, version, created_at`
 
 	args := []interface{}{newStore.Name, userId}
 
-	err = m.DB.QueryRow(ctx, stmt, args...).Scan(&storeId)
-
-	if err != nil {
-		return 0, err
-	}
-
-	return storeId, nil
+	return m.DB.QueryRow(ctx, stmt, args...).Scan(&newStore.ID, &newStore.Version, &newStore.CreatedAt)
 }
 
 func (m StoreModel) Get(ctx context.Context, storeId int, userId string) (store Store, err error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
 
-	stmt := `SELECT id, name, user_id, created_at
+	stmt := `SELECT id, name, user_id, created_at, version, modified_at
 			 FROM stores
 			 WHERE id = $1 AND user_id = $2`
 
 	args := []interface{}{storeId, userId}
 
-	err = m.DB.QueryRow(ctx, stmt, args...).Scan(&store.ID, &store.Name, &store.UserID, &store.CreatedAt)
+	err = m.DB.QueryRow(ctx, stmt, args...).Scan(&store.ID, &store.Name, &store.UserID, &store.CreatedAt, &store.Version, &store.ModifiedAt)
 
 	if err != nil {
 		return Store{}, err
@@ -55,6 +76,8 @@ func (m StoreModel) Get(ctx context.Context, storeId int, userId string) (store 
 }
 
 func (m StoreModel) List(ctx context.Context, userId string) (stores []Store, err error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
 
 	tx, err := m.DB.Begin(ctx)
 
@@ -62,7 +85,7 @@ func (m StoreModel) List(ctx context.Context, userId string) (stores []Store, er
 		return nil, err
 	}
 
-	stmt := `SELECT id, name, user_id, created_at
+	stmt := `SELECT id, name, user_id, created_at, version, modified_at
 			 FROM stores
 			 WHERE user_id = $1`
 
@@ -75,7 +98,7 @@ func (m StoreModel) List(ctx context.Context, userId string) (stores []Store, er
 	for rows.Next() {
 		var store Store
 
-		err := rows.Scan(&store.ID, &store.Name, &store.UserID, &store.CreatedAt)
+		err := rows.Scan(&store.ID, &store.Name, &store.UserID, &store.CreatedAt, &store.Version, &store.ModifiedAt)
 
 		if err != nil {
 			return nil, err
@@ -91,20 +114,24 @@ func (m StoreModel) List(ctx context.Context, userId string) (stores []Store, er
 	return stores, nil
 }
 
-func (m StoreModel) Update(ctx context.Context, newStore StoreInput, storeId int, userId string) error {
+func (m StoreModel) Update(ctx context.Context, newStore *Store, userId string) error {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
 	stmt := `UPDATE stores
-			 SET name = $1, created_at = $2
-			 WHERE id = $3 AND user_id = $4
-			`
+			 SET name = $1, version = uuid_generate_v4(), modified_at = NOW()
+			 WHERE id = $2 AND user_id = $3 AND version = $4
+			 RETURNING version, modified_at`
 
-	args := []interface{}{newStore.Name, time.Now(), storeId, userId}
+	args := []interface{}{newStore.Name, newStore.ID, userId, newStore.Version}
 
-	_, err := m.DB.Exec(ctx, stmt, args...)
-
-	return err
+	return m.DB.QueryRow(ctx, stmt, args...).Scan(&newStore.Version, &newStore.ModifiedAt)
 }
 
 func (m StoreModel) Delete(ctx context.Context, storeId int, userId string) error {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
 	stmt := `DELETE FROM stores
 			 WHERE id = $1 AND user_id = $2`
 

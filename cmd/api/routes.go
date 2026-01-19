@@ -15,8 +15,6 @@ func (app *application) routes() *chi.Mux {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(httprate.LimitByIP(100, 1*time.Minute))
-	router.NotFound(app.NotFoundError)
-	router.MethodNotAllowed(app.MethodNotAllowedError)
 
 	v1Router := chi.NewRouter()
 
