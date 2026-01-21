@@ -16,26 +16,45 @@ func (app *application) routes() *chi.Mux {
 	router.Use(middleware.Recoverer)
 	router.Use(httprate.LimitByIP(100, 1*time.Minute))
 
-	v1Router := chi.NewRouter()
+	router.Route("/v1", func(r chi.Router) {
+		r.Get("/healthcheck", app.healthcheckHandler)
 
-	v1Router.Group(func(public chi.Router) {
-		public.HandleFunc("GET /healthcheck", app.healthcheckHandler)
+		r.Group(func(r chi.Router) {
+			r.Use(app.AuthMiddleware)
+
+			app.storeRoutes(r)
+		})
 	})
-
-	v1Router.Group(func(protected chi.Router) {
-		protected.Use(app.AuthMiddleware)
-
-		protected.HandleFunc("POST /store", app.createStoreHandler)
-
-		protected.HandleFunc("GET /store", app.listStoreHandler)
-		protected.HandleFunc("GET /store/{id}", app.getStoreHandler)
-
-		protected.HandleFunc("PUT /store/{id}", app.updateStoreHandler)
-
-		protected.HandleFunc("DELETE /store/{id}", app.deleteStoreHandler)
-	})
-
-	router.Mount("/v1", v1Router)
 
 	return router
+}
+
+func (app *application) storeRoutes(r chi.Router) {
+	r.Post("/store", app.createStoreHandler)
+	r.Get("/store", app.listStoreHandler)
+
+	r.Put("/store", app.updateStoreHandler)
+
+	r.Route("/store/{store_id}", func(r chi.Router) {
+		r.Use(app.RequireStoreId)
+
+		r.Get("/", app.getStoreHandler)
+		r.Delete("/", app.deleteStoreHandler)
+
+		app.itemRoutes(r)
+	})
+}
+
+func (app *application) itemRoutes(r chi.Router) {
+	r.Post("/items", app.createItemsHandler)
+	r.Get("/items", app.listItemsHandler)
+
+	r.Put("/items", app.updateItemsHandler)
+
+	r.Route("/items/{item_id}", func(r chi.Router) {
+		r.Use(app.RequireItemId)
+
+		r.Get("/", app.getItemsHandler)
+		r.Delete("/", app.deleteItemsHandler)
+	})
 }

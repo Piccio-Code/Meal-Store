@@ -2,14 +2,14 @@ package data
 
 import (
 	"context"
+	"errors"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log"
 	"time"
 )
 
 type Store struct {
 	ID         *int       `json:"id,omitempty"`
-	Name       *string    `json:"name,omitempty" validate:"required,gte=3,lte=15"`
+	Name       *string    `json:"name,omitempty" validate:"required,gte=3"`
 	UserID     *string    `json:"-"`
 	Version    *string    `json:"version,omitempty"`
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
@@ -18,29 +18,6 @@ type Store struct {
 
 type StoreModel struct {
 	DB *pgxpool.Pool
-}
-
-func (m StoreModel) Test(ctx context.Context, uid string) string {
-
-	var user string
-
-	tx, _ := m.DB.Begin(ctx)
-
-	_, err := tx.Exec(ctx, `SELECT set_config('app.uid', $1, true)`, uid)
-	if err != nil {
-		log.Println(err)
-		return ""
-	}
-
-	// Leggi la variabile
-	err = tx.QueryRow(ctx, `SELECT current_setting('app.uid', true)`).Scan(&user)
-	if err != nil {
-		log.Println(err)
-		return ""
-	}
-
-	tx.Commit(ctx)
-	return user
 }
 
 func (m StoreModel) Insert(ctx context.Context, newStore *Store, userId string) error {
@@ -137,7 +114,15 @@ func (m StoreModel) Delete(ctx context.Context, storeId int, userId string) erro
 
 	args := []interface{}{storeId, userId}
 
-	_, err := m.DB.Exec(ctx, stmt, args...)
+	result, err := m.DB.Exec(ctx, stmt, args...)
+
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return errors.New("0 effected rows")
+	}
 
 	return err
 }

@@ -1,0 +1,188 @@
+{
+  "info": {
+    "_postman_id": "25bc3c94-4296-4224-b817-590d0528fa02",
+    "name": "ITEM",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "LIST",
+      "id": "faebc74d-65d9-4430-b9d3-f362e5f55d23",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/v1/store/19/items",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "v1",
+            "store",
+            "19",
+            "items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "POST",
+      "id": "3c31be56-eaf6-4455-aa49-ebc8cfa0c5be",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Macinato tacchino\",\r\n    \"current_capacity\": 4\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/v1/store/19/items",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "v1",
+            "store",
+            "19",
+            "items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET",
+      "id": "9f8c0a28-7ec9-485f-9d70-14c2207fecb1",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/v1/store/19/items/2",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "v1",
+            "store",
+            "19",
+            "items",
+            "2"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PUT",
+      "id": "0ec42da1-8432-41ef-9ca2-d779cf10ae0d",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"id\": 1,\r\n    \"current_capacity\": 2,\r\n    \"version\": \"ee99afb0-5579-4df5-a5ab-873035128f52\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/v1/store/19/items",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "v1",
+            "store",
+            "19",
+            "items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE",
+      "id": "f5b84c6d-1440-4544-8a1f-1633a16c2758",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/v1/store/19/items",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "v1",
+            "store",
+            "19",
+            "items"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "jwt",
+    "jwt": [
+      {
+        "key": "header",
+        "value": "{\r\n  \"alg\": \"HS256\",\r\n  \"typ\": \"JWT\"\r\n}",
+        "type": "string"
+      },
+      {
+        "key": "secret",
+        "value": "123",
+        "type": "string"
+      },
+      {
+        "key": "payload",
+        "value": "{\r\n  \"sub\": \"test\",\r\n  \"name\": \"testUser\",\r\n  \"iat\": 1516239022\r\n}",
+        "type": "string"
+      },
+      {
+        "key": "algorithm",
+        "value": "HS256",
+        "type": "string"
+      },
+      {
+        "key": "isSecretBase64Encoded",
+        "value": false,
+        "type": "boolean"
+      },
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      },
+      {
+        "key": "headerPrefix",
+        "value": "Bearer",
+        "type": "string"
+      },
+      {
+        "key": "queryParamKey",
+        "value": "token",
+        "type": "string"
+      }
+    ]
+  }
+}

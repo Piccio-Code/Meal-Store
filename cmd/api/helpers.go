@@ -2,17 +2,17 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
 )
 
-func (app *application) getIdParam(r *http.Request) (int, error) {
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+func (app *application) getIdParam(r *http.Request, name string) (int, error) {
+	id, err := strconv.Atoi(chi.URLParam(r, name))
 
 	if err != nil || id < 1 {
-		return 0, errors.New("error getting the id")
+		return 0, fmt.Errorf("error getting the id: {%s}", name)
 	}
 
 	return id, nil

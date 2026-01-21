@@ -77,11 +77,10 @@ func (app *application) listStoreHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *application) getStoreHandler(w http.ResponseWriter, r *http.Request) {
-	storeId, err := app.getIdParam(r)
+	storeId, ok := r.Context().Value(StoreIdKey).(int)
 
-	if err != nil {
-		app.errorLog.Println(err)
-		app.NotFoundError(w, r)
+	if !ok {
+		app.UnauthorizedError(w, r)
 		return
 	}
 
@@ -153,11 +152,10 @@ func (app *application) updateStoreHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) deleteStoreHandler(w http.ResponseWriter, r *http.Request) {
-	storeId, err := app.getIdParam(r)
+	storeId, ok := r.Context().Value(StoreIdKey).(int)
 
-	if err != nil {
-		app.errorLog.Println(err)
-		app.NotFoundError(w, r)
+	if !ok {
+		app.UnauthorizedError(w, r)
 		return
 	}
 
@@ -168,7 +166,7 @@ func (app *application) deleteStoreHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = app.models.Stores.Delete(r.Context(), storeId, userId)
+	err := app.models.Stores.Delete(r.Context(), storeId, userId)
 
 	if err != nil {
 		app.errorLog.Println(err)
