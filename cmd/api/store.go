@@ -36,7 +36,7 @@ func (app *application) createStoreHandler(w http.ResponseWriter, r *http.Reques
 
 	if err != nil {
 		app.errorLog.Println(err)
-		app.InternalServerError(w, r)
+		app.BadRequestError(w, r)
 		return
 	}
 
@@ -100,6 +100,64 @@ func (app *application) getStoreHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelop{"store": store})
+
+	if err != nil {
+		app.errorLog.Println(err)
+		app.BadRequestError(w, r)
+		return
+	}
+}
+
+func (app *application) getStoreOptions(w http.ResponseWriter, r *http.Request) {
+	userId, ok := r.Context().Value(CurrentUserIDKey).(string)
+
+	if !ok {
+		app.UnauthorizedError(w, r)
+		return
+	}
+
+	stores, err := app.models.Stores.List(r.Context(), userId)
+
+	if err != nil {
+		app.errorLog.Println(err)
+		app.BadRequestError(w, r)
+		return
+	}
+
+	options := make([]OptionStruct, 0)
+
+	for _, store := range stores {
+		options = append(options, OptionStruct{Option: *store.Name})
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelop{"options": options})
+
+	if err != nil {
+		app.errorLog.Println(err)
+		app.BadRequestError(w, r)
+		return
+	}
+}
+
+func (app *application) getStoreId(w http.ResponseWriter, r *http.Request) {
+	userId, ok := r.Context().Value(CurrentUserIDKey).(string)
+
+	if !ok {
+		app.UnauthorizedError(w, r)
+		return
+	}
+
+	storeName := r.URL.Query().Get("store_name")
+
+	storeId, err := app.models.Stores.GetID(r.Context(), storeName, userId)
+
+	if err != nil {
+		app.errorLog.Println(err)
+		app.BadRequestError(w, r)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelop{"store_id": storeId})
 
 	if err != nil {
 		app.errorLog.Println(err)

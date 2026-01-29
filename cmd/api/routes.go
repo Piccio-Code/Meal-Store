@@ -35,6 +35,9 @@ func (app *application) storeRoutes(r chi.Router) {
 
 	r.Put("/store", app.updateStoreHandler)
 
+	r.Get("/store-options", app.getStoreOptions)
+	r.Get("/store-id", app.getStoreId)
+
 	r.Route("/store/{store_id}", func(r chi.Router) {
 		r.Use(app.RequireStoreId)
 
@@ -47,9 +50,14 @@ func (app *application) storeRoutes(r chi.Router) {
 
 func (app *application) itemRoutes(r chi.Router) {
 	r.Post("/items", app.createItemsHandler)
+	r.Post("/items-list", app.createItemsListHandler)
 	r.Get("/items", app.listItemsHandler)
 
 	r.Put("/items", app.updateItemsHandler)
+	r.Put("/items-list", app.updateItemsListHandler)
+
+	r.Get("/items-options", app.getItemsOptionsHandler)
+	r.Get("/item-id", app.getItemsId)
 
 	r.Route("/items/{item_id}", func(r chi.Router) {
 		r.Use(app.RequireItemId)

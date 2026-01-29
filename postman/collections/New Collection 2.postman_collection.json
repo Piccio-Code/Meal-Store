@@ -1,0 +1,50 @@
+{
+  "info": {
+    "_postman_id": "8e2d6070-6cec-42ac-8169-a057e397d251",
+    "name": "Whatapps API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "SEND MESSAGE",
+      "id": "023f9d74-0961-4e1e-96a6-90bf0c319372",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer EAAxZChCw7LX4BQi2nYZAaLV8ZCmmMg1fc9pKsoK2eihbuo3ArRqdRfnCqqacIQ4SZCn2kqv09PILTJx08LCGCHH4jxyZAMwF9z71YOwfWnc0ZB9mMYFuMuYlbipcKZCEgPrTkX2IZAvQ7zCMJ2kjK5dkB8T3tz9yAl6OgoMddrWe1FQ0N4FPz0XIr6hEDZA52GBFI9AZDZD"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\n{\n  \"messaging_product\": \"whatsapp\",\n  \"recipient_type\": \"individual\",\n  \"to\": \"+393917031610\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"Yagay, gli piace il masini\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://graph.facebook.com/v23.0/961290990402845/messages",
+          "protocol": "https",
+          "host": [
+            "graph",
+            "facebook",
+            "com"
+          ],
+          "path": [
+            "v23.0",
+            "961290990402845",
+            "messages"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

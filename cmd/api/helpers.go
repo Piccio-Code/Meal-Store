@@ -8,6 +8,10 @@ import (
 	"strconv"
 )
 
+type OptionStruct struct {
+	Option string `json:"option"`
+}
+
 func (app *application) getIdParam(r *http.Request, name string) (int, error) {
 	id, err := strconv.Atoi(chi.URLParam(r, name))
 

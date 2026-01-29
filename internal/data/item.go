@@ -28,7 +28,7 @@ type UpdateItem struct {
 	Version         *string `json:"version" validate:"required"`
 }
 
-func (m ItemModel) List(ctx context.Context, storeId int) (items []Item, err error) {
+func (m ItemModel) List(ctx context.Context, storeId int, onlyWarnings bool) (items []Item, err error) {
 	tx, err := m.DB.Begin(ctx)
 
 	if err != nil {
@@ -40,10 +40,10 @@ func (m ItemModel) List(ctx context.Context, storeId int) (items []Item, err err
 	stmt := `
 			SELECT id, name, current_capacity, store_id, version, created_at, modified_at
 			FROM items
-			WHERE store_id = $1
+			WHERE store_id = $1 AND (current_capacity <= 1 OR NOT $2)
 	`
 
-	rows, err := tx.Query(ctx, stmt, storeId)
+	rows, err := tx.Query(ctx, stmt, storeId, onlyWarnings)
 
 	if err != nil {
 		return nil, err
@@ -96,6 +96,34 @@ func (m ItemModel) Insert(ctx context.Context, newItem *Item) error {
 	return tx.Commit(ctx)
 }
 
+func (m ItemModel) InsertList(ctx context.Context, newItemList []*Item, storeId int) error {
+	tx, err := m.DB.Begin(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback(ctx)
+
+	stmt := `
+			INSERT INTO items(name, current_capacity, store_id)
+			VALUES ($1, $2, $3)
+			RETURNING id, version, created_at
+	`
+
+	for _, newItem := range newItemList {
+		args := []interface{}{*newItem.Name, *newItem.CurrentCapacity, storeId}
+
+		err = tx.QueryRow(ctx, stmt, args...).Scan(&newItem.Id, &newItem.Version, &newItem.CreatedAt)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
 func (m ItemModel) Get(ctx context.Context, itemId, storeId int) (item Item, err error) {
 	tx, err := m.DB.Begin(ctx)
 
@@ -118,6 +146,30 @@ func (m ItemModel) Get(ctx context.Context, itemId, storeId int) (item Item, err
 	}
 
 	return item, tx.Commit(ctx)
+}
+
+func (m ItemModel) GetId(ctx context.Context, itemName string, storeId int) (itemId int, err error) {
+	tx, err := m.DB.Begin(ctx)
+
+	if err != nil {
+		return 0, err
+	}
+
+	defer tx.Rollback(ctx)
+
+	stmt := `
+			SELECT id
+			FROM items
+			WHERE name = $1 AND store_id = $2
+	`
+
+	err = tx.QueryRow(ctx, stmt, itemName, storeId).Scan(&itemId)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return itemId, tx.Commit(ctx)
 }
 
 func (m ItemModel) Update(ctx context.Context, item *Item) error {

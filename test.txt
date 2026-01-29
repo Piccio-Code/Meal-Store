@@ -1,3 +1,6 @@
 JWT TESTS:
 
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwibmFtZSI6InRlc3RVc2VyIiwiaWF0IjoxNTE2MjM5MDIyfQ.gRYAxAyHUF1DH_PTKylllV_tFcKyT4ycDWtYalZcqgI
+
+
+$env:N8N_HOST="n8n.coursetracker.it"; $env:N8N_PROTOCOL="https"; $env:WEBHOOK_URL="https://n8n.coursetracker.it/"; $env:N8N_ALLOWED_ORIGINS="https://n8n.coursetracker.it"; $env:N8N_TRUST_PROXY="true"; n8n start

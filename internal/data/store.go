@@ -126,3 +126,24 @@ func (m StoreModel) Delete(ctx context.Context, storeId int, userId string) erro
 
 	return err
 }
+
+func (m StoreModel) GetID(ctx context.Context, storeName string, userId string) (storeId int, err error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	stmt := `
+			SELECT id 
+			FROM stores
+			WHERE name = $1 AND user_id = $2
+			`
+
+	args := []interface{}{storeName, userId}
+
+	err = m.DB.QueryRow(ctx, stmt, args...).Scan(&storeId)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return storeId, nil
+}
