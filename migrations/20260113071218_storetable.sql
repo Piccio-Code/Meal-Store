@@ -4,8 +4,7 @@ CREATE TABLE stores (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     user_id VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES "user"(id)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
