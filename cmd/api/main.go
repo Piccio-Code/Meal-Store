@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/Piccio-Code/MealStore/internal/data"
@@ -18,17 +17,8 @@ import (
 const version = "1.0.0"
 
 type config struct {
-	port       int
-	env        string
-	poolConfig poolConfig
-}
-
-type poolConfig struct {
-	MaxConns          int32         `json:"maxConns,omitempty"`
-	MinConns          int32         `json:"minConns,omitempty"`
-	MaxConnLifetime   time.Duration `json:"maxConnLifetime,omitempty"`
-	MaxConnIdleTime   time.Duration `json:"maxConnIdleTime,omitempty"`
-	HealthCheckPeriod time.Duration `json:"healthCheckPeriod,omitempty"`
+	port int
+	env  string
 }
 
 type application struct {
@@ -40,16 +30,7 @@ type application struct {
 }
 
 func main() {
-	pCfg := poolConfig{
-		MaxConns:          10,
-		MinConns:          0,
-		MaxConnLifetime:   time.Hour * 1,
-		MaxConnIdleTime:   time.Minute * 30,
-		HealthCheckPeriod: time.Minute,
-	}
-
 	var cfg config
-	cfg.poolConfig = pCfg
 
 	err := godotenv.Load()
 	if err != nil {
@@ -68,12 +49,6 @@ func main() {
 		log.Println("Error connecting to the DB")
 		log.Fatal(err)
 	}
-
-	pool.Config().MaxConns = cfg.poolConfig.MaxConns
-	pool.Config().MinConns = cfg.poolConfig.MinConns
-	pool.Config().MaxConnLifetime = cfg.poolConfig.MaxConnLifetime
-	pool.Config().MaxConnIdleTime = cfg.poolConfig.MaxConnIdleTime
-	pool.Config().HealthCheckPeriod = cfg.poolConfig.HealthCheckPeriod
 
 	defer pool.Close()
 
@@ -110,24 +85,4 @@ func NewDBPool() (pool *pgxpool.Pool, err error) {
 	}
 
 	return pool, nil
-}
-
-func (p poolConfig) MarshalJSON() ([]byte, error) {
-	type poolConfigOut struct {
-		MaxConns          int32  `json:"maxConns,omitempty"`
-		MinConns          int32  `json:"minConns,omitempty"`
-		MaxConnLifetime   string `json:"maxConnLifetime,omitempty"`
-		MaxConnIdleTime   string `json:"maxConnIdleTime,omitempty"`
-		HealthCheckPeriod string `json:"healthCheckPeriod,omitempty"`
-	}
-
-	js := poolConfigOut{
-		MaxConns:          p.MaxConns,
-		MinConns:          p.MinConns,
-		MaxConnLifetime:   p.MaxConnLifetime.String(),
-		MaxConnIdleTime:   p.MaxConnIdleTime.String(),
-		HealthCheckPeriod: p.HealthCheckPeriod.String(),
-	}
-
-	return json.MarshalIndent(js, "", "\t")
 }
