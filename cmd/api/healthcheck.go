@@ -5,19 +5,17 @@ import (
 )
 
 type healthData struct {
-	Status       string     `json:"status,omitempty"`
-	Environment  string     `json:"environment,omitempty"`
-	Version      string     `json:"version,omitempty"`
-	PoolSettings poolConfig `json:"pool_settings"`
+	Status      string `json:"status,omitempty"`
+	Environment string `json:"environment,omitempty"`
+	Version     string `json:"version,omitempty"`
 }
 
 func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 
 	data := healthData{
-		Status:       "available",
-		Environment:  app.config.env,
-		Version:      version,
-		PoolSettings: app.config.poolConfig,
+		Status:      "available",
+		Environment: app.config.env,
+		Version:     version,
 	}
 
 	err := app.writeJSON(w, http.StatusOK, envelop{"health_status": data})
