@@ -3,8 +3,6 @@ package main
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/httprate"
-	"time"
 )
 
 func (app *application) routes() *chi.Mux {
@@ -14,7 +12,6 @@ func (app *application) routes() *chi.Mux {
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
-	router.Use(httprate.LimitByIP(100, 1*time.Minute))
 
 	router.Route("/v1", func(r chi.Router) {
 		r.Get("/healthcheck", app.healthcheckHandler)

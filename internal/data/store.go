@@ -56,21 +56,17 @@ func (m StoreModel) List(ctx context.Context, userId string) (stores []Store, er
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
-	tx, err := m.DB.Begin(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
 	stmt := `SELECT id, name, user_id, created_at, version, modified_at
 			 FROM stores
 			 WHERE user_id = $1`
 
-	rows, err := tx.Query(ctx, stmt, userId)
+	rows, err := m.DB.Query(ctx, stmt, userId)
 
 	if err != nil {
 		return nil, err
 	}
+
+	defer rows.Close()
 
 	for rows.Next() {
 		var store Store
