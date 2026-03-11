@@ -19,7 +19,7 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:8080/v1/store/22/items",
+          "raw": "http://localhost:8080/v1/store/1/items?only_warnings=",
           "protocol": "http",
           "host": [
             "localhost"
@@ -28,8 +28,15 @@
           "path": [
             "v1",
             "store",
-            "22",
+            "1",
             "items"
+          ],
+          "query": [
+            {
+              "key": "only_warnings",
+              "value": "",
+              "uuid": "9a483683-2cd2-40b7-8877-4571fda94277"
+            }
           ]
         }
       },
@@ -40,7 +47,14 @@
       "id": "3c31be56-eaf6-4455-aa49-ebc8cfa0c5be",
       "request": {
         "method": "POST",
-        "header": [],
+        "header": [
+          {
+            "key": "X-Telegram-Chat-ID",
+            "value": "7202833466",
+            "type": "text",
+            "uuid": "9b4639dd-d1cb-41a6-b8a5-fd6161c3557a"
+          }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\r\n    \"name\": \"Macinato tacchino\",\r\n    \"current_capacity\": 4\r\n}",
@@ -51,7 +65,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8080/v1/store/19/items",
+          "raw": "http://localhost:8080/v1/store/1/items",
           "protocol": "http",
           "host": [
             "localhost"
@@ -60,7 +74,7 @@
           "path": [
             "v1",
             "store",
-            "19",
+            "1",
             "items"
           ]
         }

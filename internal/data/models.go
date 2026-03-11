@@ -5,13 +5,15 @@ import (
 )
 
 type Models struct {
-	Stores StoreModel
-	Items  ItemModel
+	Stores     StoreModel
+	Items      ItemModel
+	EatenItems EatenItemsModel
 }
 
 func NewModels(db *pgxpool.Pool) Models {
 	return Models{
-		Stores: StoreModel{DB: db},
-		Items:  ItemModel{DB: db},
+		Stores:     StoreModel{DB: db},
+		Items:      ItemModel{DB: db},
+		EatenItems: EatenItemsModel{DB: db},
 	}
 }

@@ -1,0 +1,48 @@
+{
+  "info": {
+    "_postman_id": "6d5a145e-eca3-481b-b96f-95cc80e7bbb5",
+    "name": "Eaten Items",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create",
+      "id": "d3a5da80-642d-4387-8f33-0606c94da5a8",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Telegram-Chat-ID",
+            "value": "7202833466",
+            "type": "text",
+            "uuid": "80506cac-ef99-425b-9397-7c4b935f2ed2"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"quantity\": 2,\r\n  \"eaten_date\": \"2025-01-15T12:30:00Z\",\r\n  \"item_id\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/v1/store/1/eatenItem",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "v1",
+            "store",
+            "1",
+            "eatenItem"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

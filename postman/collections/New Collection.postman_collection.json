@@ -55,7 +55,14 @@
           ]
         },
         "method": "GET",
-        "header": [],
+        "header": [
+          {
+            "key": "X-Telegram-Chat-ID",
+            "value": "7202833466",
+            "type": "text",
+            "uuid": "c7190e97-b2a8-4584-ab48-bd3ab03a48e6"
+          }
+        ],
         "url": {
           "raw": "http://localhost:8080/v1/store",
           "protocol": "http",
@@ -76,7 +83,14 @@
       "id": "b31d3216-1c5c-4a80-9997-f2ab4fe80ec4",
       "request": {
         "method": "POST",
-        "header": [],
+        "header": [
+          {
+            "key": "X-Telegram-Chat-ID",
+            "value": "7202833466",
+            "type": "text",
+            "uuid": "514b47cf-bd5d-4bd3-b1cd-cd36831e1e97"
+          }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\r\n    \"name\": \"Reggello Store 🏪\"\r\n}",
